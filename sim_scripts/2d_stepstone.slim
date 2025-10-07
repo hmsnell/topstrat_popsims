@@ -1,0 +1,53 @@
+// 2D stepping stone with grid model
+// references: https://benhaller.com/slim/SLiM_Manual.pdf
+
+initialize() {  
+    // define input constants from command line
+        if (exists("slimgui")) {
+                defineConstant("sim_num", 101); }
+    
+    defineConstant("direc", "/users/hsnell/data/hsnell/swifr/random_simulations/2D_stepstone/");
+	initializeMutationRate(1e-7);  
+	initializeMutationType("m1", 0.5, "f", 0.0);  
+	initializeGenomicElementType("g1", m1, 1.0);  
+	initializeGenomicElement(g1, 0, 999999);  
+	initializeRecombinationRate(1e-8); 
+} 
+
+1 early() {  
+	metapopSide = 3;   // number of subpops along one side of the grid  
+	metapopSize = metapopSide * metapopSide;  
+	for (i in 1:metapopSize)   
+		sim.addSubpop(i, 500);    
+		
+	
+	subpops = sim.subpopulations;  
+	for (x in 1:metapopSide)   
+		for (y in 1:metapopSide)   
+		{    
+			destID = (x - 1) + (y - 1) * metapopSide + 1;    
+			destSubpop = subpops[destID - 1];    
+			if (x > 1)   // left to right     
+				destSubpop.setMigrationRates(destID - 1, 0.00025);    // lowered migration rate
+			if (x < metapopSide)   // right to left    
+				destSubpop.setMigrationRates(destID + 1, 0.00025);    // lowered migration rate
+			if (y > 1)   // top to bottom     
+				destSubpop.setMigrationRates(destID - metapopSide, 0.00025);    // lowered migration rate
+			if (y < metapopSide)   // bottom to top     
+				destSubpop.setMigrationRates(destID + metapopSide, 0.00025);   // lowered migration rate
+		} 
+} 
+
+10000 late() { 
+    a = sim.subpopulations[0].genomes;
+	b = sim.subpopulations[1].genomes;
+	c = sim.subpopulations[2].genomes;
+	d = sim.subpopulations[3].genomes;
+	e = sim.subpopulations[4].genomes;
+	f = sim.subpopulations[5].genomes;
+	g = sim.subpopulations[6].genomes;
+	h = sim.subpopulations[7].genomes; 
+	i = sim.subpopulations[8].genomes;
+	vec = c(a, b, c, d, e, f, g, h, i);
+	vec.outputVCF(filePath = direc + "2D_stepstone_" + sim_num + ".vcf"); 
+} 
